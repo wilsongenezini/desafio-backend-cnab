@@ -3,7 +3,6 @@ const indexConnectToDatabase = require("./database/connect");
 
 dotenv.config();
 
-indexConnectToDatabase();
+//indexConnectToDatabase();
 
-
-//require("./express");
+require("./app");
