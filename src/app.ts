@@ -16,6 +16,34 @@ app.get('/home', (req: any, res: any) => {
   res.send('<form action="/upload" method="post" enctype="multipart/form-data"><input type="file" name="txtFile"><input type="submit" value="Enviar"></form>');
 });
 
+app.get('/database', async (req: any, res:any) => { 
+  try {
+    const testeExibicao = await OperationModel.find({});
+    const testeExibicaoErros = await OperationModelComErros.find({});
+
+    const exibicao = {
+      Mensagem: 'Listagem das operações com sucesso.',
+      Conteúdo: testeExibicao,
+    };
+
+    const exibicaoComErros = {
+      Mensagem: 'Listagem das operações com erro.',
+      Conteúdo: testeExibicaoErros,
+    };
+
+    const exibicaoFinal = {
+      Operações: exibicao,
+      Operações_com_erros: exibicaoComErros,
+    }
+
+    res.status(200).json(exibicaoFinal);
+
+  } catch (error) {
+    console.error('Erro ao exibir dados.', error);
+    res.status(500).send('Erro ao exibir dados.');
+  }
+});  
+
 app.post('/upload', upload.single('txtFile'), async (req: any, res:any) => {
   if (!req.file)
     return res.status(400).send('Nenhum arquivo foi enviado.');
@@ -28,8 +56,6 @@ app.post('/upload', upload.single('txtFile'), async (req: any, res:any) => {
 
   console.log("cheguei aqui... (corretos)");
   
-  //res.send(arqTratadoEmArrays.arrayResultadoComErros); //VISUALIZAÇÃO TEMPORÁRIA
-
   try {
     for (const entidade of arqTratadoEmArrays.arrayResultado) {
       const [Tipo, Data, Valor, CPF, Cartão, Dono_Loja, Nome_Loja] = entidade;
@@ -46,8 +72,7 @@ app.post('/upload', upload.single('txtFile'), async (req: any, res:any) => {
       await documento.save();
     }
 
-    //console.log('Dados corretos inseridos com sucesso ao banco de dados.');
-    //res.status(200).send('Dados corretos inseridos com sucesso.');
+    res.status(201);
 
   } catch (error) {
     console.error('Erro ao inserir dados corretos:', error);
@@ -72,44 +97,15 @@ app.post('/upload', upload.single('txtFile'), async (req: any, res:any) => {
       await documentoComErros.save();
     }
 
-    //console.log('Dados com erros inseridos com sucesso ao banco de dados.');
-    res.status(200).send('Dados inseridos com sucesso.');
+    res.status(201);
+
   } catch (error) {
     console.error('Erro ao inserir dados com erros:', error);
     res.status(500).send('Erro ao inserir dados com erros.');
   }
+
+  res.redirect('/database');
 });
-
-// app.post('/upload', upload.single('txtFile'), async (req: any, res:any) => {
-//   const arquivoCNAB = req.file.buffer.toString('utf-8');
-
-//   let arqTratadoEmArrays = tratarArquivoCNAB(arquivoCNAB);
-
-//   console.log("cheguei aqui... (erros)");
-
-//   try {
-//     for (const entidadeComErros of arqTratadoEmArrays.arrayResultadoComErros) {
-//       const [Tipo, Data, Valor, CPF, Cartão, Dono_Loja, Nome_Loja] = entidadeComErros;
-//       const documentoComErros = new OperationModelComErros({
-//         Tipo,
-//         Data,
-//         Valor,
-//         CPF,
-//         Cartão,
-//         Dono_Loja,
-//         Nome_Loja,
-//       });
-
-//       await documentoComErros.save();
-//     }
-
-//     //console.log('Dados com erros inseridos com sucesso ao banco de dados.');
-//     res.status(200).send('Dados com erros inseridos com sucesso.');
-//   } catch (error) {
-//     console.error('Erro ao inserir dados com erros:', error);
-//     res.status(500).send('Erro ao inserir dados com erros.');
-//   }
-// });
 
 // app.post("/teste", (req: any, res:any) => { //POST PARA TESTAR NO POSTMAN
 //   try {
@@ -120,7 +116,6 @@ app.post('/upload', upload.single('txtFile'), async (req: any, res:any) => {
 //     res.status(500);
 //   }
 // });
-
 
 const port = 3000;
 app.listen(port, () => console.log(`Rodando na porta ${port}`));

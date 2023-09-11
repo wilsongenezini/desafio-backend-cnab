@@ -22,6 +22,29 @@ const CNABController_1 = require("./controllers/CNABController"); //IMPORTAR FUN
 app.get('/home', (req, res) => {
     res.send('<form action="/upload" method="post" enctype="multipart/form-data"><input type="file" name="txtFile"><input type="submit" value="Enviar"></form>');
 });
+app.get('/database', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const testeExibicao = yield OperationModel.find({});
+        const testeExibicaoErros = yield OperationModelComErros.find({});
+        const exibicao = {
+            Mensagem: 'Listagem das operações com sucesso.',
+            Conteúdo: testeExibicao,
+        };
+        const exibicaoComErros = {
+            Mensagem: 'Listagem das operações com erro.',
+            Conteúdo: testeExibicaoErros,
+        };
+        const exibicaoFinal = {
+            Operações: exibicao,
+            Operações_com_erros: exibicaoComErros,
+        };
+        res.status(200).json(exibicaoFinal);
+    }
+    catch (error) {
+        console.error('Erro ao exibir dados.', error);
+        res.status(500).send('Erro ao exibir dados.');
+    }
+}));
 app.post('/upload', upload.single('txtFile'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (!req.file)
         return res.status(400).send('Nenhum arquivo foi enviado.');
@@ -29,7 +52,6 @@ app.post('/upload', upload.single('txtFile'), (req, res) => __awaiter(void 0, vo
     //TRATAMENTO DO ARQUIVO
     let arqTratadoEmArrays = (0, CNABController_1.tratarArquivoCNAB)(arquivoCNAB);
     console.log("cheguei aqui... (corretos)");
-    //res.send(arqTratadoEmArrays.arrayResultadoComErros); //VISUALIZAÇÃO TEMPORÁRIA
     try {
         for (const entidade of arqTratadoEmArrays.arrayResultado) {
             const [Tipo, Data, Valor, CPF, Cartão, Dono_Loja, Nome_Loja] = entidade;
@@ -44,8 +66,7 @@ app.post('/upload', upload.single('txtFile'), (req, res) => __awaiter(void 0, vo
             });
             yield documento.save();
         }
-        //console.log('Dados corretos inseridos com sucesso ao banco de dados.');
-        //res.status(200).send('Dados corretos inseridos com sucesso.');
+        res.status(201);
     }
     catch (error) {
         console.error('Erro ao inserir dados corretos:', error);
@@ -67,39 +88,14 @@ app.post('/upload', upload.single('txtFile'), (req, res) => __awaiter(void 0, vo
             });
             yield documentoComErros.save();
         }
-        //console.log('Dados com erros inseridos com sucesso ao banco de dados.');
-        res.status(200).send('Dados inseridos com sucesso.');
+        res.status(201);
     }
     catch (error) {
         console.error('Erro ao inserir dados com erros:', error);
         res.status(500).send('Erro ao inserir dados com erros.');
     }
+    res.redirect('/database');
 }));
-// app.post('/upload', upload.single('txtFile'), async (req: any, res:any) => {
-//   const arquivoCNAB = req.file.buffer.toString('utf-8');
-//   let arqTratadoEmArrays = tratarArquivoCNAB(arquivoCNAB);
-//   console.log("cheguei aqui... (erros)");
-//   try {
-//     for (const entidadeComErros of arqTratadoEmArrays.arrayResultadoComErros) {
-//       const [Tipo, Data, Valor, CPF, Cartão, Dono_Loja, Nome_Loja] = entidadeComErros;
-//       const documentoComErros = new OperationModelComErros({
-//         Tipo,
-//         Data,
-//         Valor,
-//         CPF,
-//         Cartão,
-//         Dono_Loja,
-//         Nome_Loja,
-//       });
-//       await documentoComErros.save();
-//     }
-//     //console.log('Dados com erros inseridos com sucesso ao banco de dados.');
-//     res.status(200).send('Dados com erros inseridos com sucesso.');
-//   } catch (error) {
-//     console.error('Erro ao inserir dados com erros:', error);
-//     res.status(500).send('Erro ao inserir dados com erros.');
-//   }
-// });
 // app.post("/teste", (req: any, res:any) => { //POST PARA TESTAR NO POSTMAN
 //   try {
 //     const user = OperationModel.create(req.body);

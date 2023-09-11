@@ -1,12 +1,12 @@
 import { format, parse } from 'date-fns';
 
-export function tratarArquivoCNAB(fileTxt: any) {
+export function tratarArquivoCNAB(fileTxt: string) {
     let linhas = fileTxt.split("\n");
 
     const arrayResultado: (string | number)[][] = [];
     const arrayResultadoComErros: (string | number)[][] = [];
 
-    linhas.forEach((linha: any) => {
+    linhas.forEach((linha: string) => {
         const arrayAux: (string | number)[] = [];
         const arrayAuxComErros: (string | number)[] = [];
 
