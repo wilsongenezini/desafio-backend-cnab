@@ -11,6 +11,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 import { tratarArquivoCNAB } from "./controllers/CNABController"; //IMPORTAR FUNÇÃO DA CONTROLLER
+import { listarOperacoesPorLoja } from "./controllers/CNABController";
 
 app.get('/home', (req: any, res: any) => {
   res.send('<form action="/upload" method="post" enctype="multipart/form-data"><input type="file" name="txtFile"><input type="submit" value="Enviar"></form>');
@@ -20,6 +21,7 @@ app.get('/database', async (req: any, res:any) => {
   try {
     const testeExibicao = await OperationModel.find({});
     const testeExibicaoErros = await OperationModelComErros.find({});
+    const exibicaoPorLojas = app.locals.sharedData;
 
     const exibicao = {
       Mensagem: 'Listagem das operações com sucesso.',
@@ -34,6 +36,7 @@ app.get('/database', async (req: any, res:any) => {
     const exibicaoFinal = {
       Operações: exibicao,
       Operações_com_erros: exibicaoComErros,
+      Operações_por_lojas: exibicaoPorLojas,
     }
 
     res.status(200).json(exibicaoFinal);
@@ -54,7 +57,10 @@ app.post('/upload', upload.single('txtFile'), async (req: any, res:any) => {
 
   let arqTratadoEmArrays = tratarArquivoCNAB(arquivoCNAB);
 
-  console.log("cheguei aqui... (corretos)");
+  console.log("TESTE LOGO ABAIXO: ##########");
+
+  const listaPorLojas = listarOperacoesPorLoja(arqTratadoEmArrays.arrayResultado);
+  app.locals.sharedData = listaPorLojas;
   
   try {
     for (const entidade of arqTratadoEmArrays.arrayResultado) {

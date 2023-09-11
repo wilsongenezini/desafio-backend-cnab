@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.tratarArquivoCNAB = void 0;
+exports.listarOperacoesPorLoja = exports.tratarArquivoCNAB = void 0;
 const date_fns_1 = require("date-fns");
 function tratarArquivoCNAB(fileTxt) {
     let linhas = fileTxt.split("\n");
@@ -43,6 +43,69 @@ function tratarArquivoCNAB(fileTxt) {
 }
 exports.tratarArquivoCNAB = tratarArquivoCNAB;
 ;
+// class Operacoes {
+//     constructor(
+//         public Tipo: string,
+//         public Data: string,
+//         public Valor: number,
+//         public CPF: string,
+//         public Cartao: string,
+//         public Dono_Loja: string,
+//         public Nome_Loja: string
+//     ) {}
+// };
+// function listarOperacoesPorLoja(operacoes: Operacoes[]) {
+//     let arrayAux: (string | number)[][] = operacoes.map(operacao => [
+//         operacao.Tipo,
+//         operacao.Data,
+//         operacao.Valor,
+//         operacao.CPF,
+//         operacao.Cartao,
+//         operacao.Dono_Loja,
+//         operacao.Nome_Loja,
+//     ]);
+//     let arrayAuxCopia: (string | number)[][] = arrayAux;
+//     const arrayResultado: (string | number)[][] = [];
+//     for (const operacao of operacoes) {
+//         const arrayFiltradoPorLoja: (string | number)[] = [];
+//         arrayAux = arrayAuxCopia;
+//         for (const operacaoAux of arrayAux) {
+//             if (operacaoAux === operacao || operacaoAux === operacao.valueOf()) {
+//                 arrayFiltradoPorLoja.push()
+//             }
+//         }
+//     }
+// };
+function listarOperacoesPorLoja(listagem) {
+    const resultado = {};
+    let operacoesDestaLoja = {};
+    for (const i of listagem) {
+        const nomeLoja = i[6];
+        const valor = Number(i[2]);
+        if (!resultado[nomeLoja]) {
+            resultado[nomeLoja] = 0;
+        }
+        resultado[nomeLoja] += valor;
+        if (!operacoesDestaLoja[nomeLoja]) {
+            operacoesDestaLoja[nomeLoja] = [];
+        }
+        const operacao = {
+            Tipo: i[0],
+            Data: i[1],
+            CPF: i[3],
+            Cartao: i[4],
+            Dono_Loja: i[5]
+        };
+        operacoesDestaLoja[nomeLoja].push(operacao);
+    }
+    const exibicaoPorLojas = {};
+    for (const loja in resultado) {
+        exibicaoPorLojas[loja] = resultado[loja];
+        exibicaoPorLojas[`${loja}_Operacoes`] = operacoesDestaLoja[loja];
+    }
+    return exibicaoPorLojas;
+}
+exports.listarOperacoesPorLoja = listarOperacoesPorLoja;
 function obterTipoTransacao(tipo) {
     switch (tipo) {
         case "1":

@@ -19,6 +19,7 @@ app.use(express.json());
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 const CNABController_1 = require("./controllers/CNABController"); //IMPORTAR FUNÇÃO DA CONTROLLER
+const CNABController_2 = require("./controllers/CNABController");
 app.get('/home', (req, res) => {
     res.send('<form action="/upload" method="post" enctype="multipart/form-data"><input type="file" name="txtFile"><input type="submit" value="Enviar"></form>');
 });
@@ -26,6 +27,7 @@ app.get('/database', (req, res) => __awaiter(void 0, void 0, void 0, function* (
     try {
         const testeExibicao = yield OperationModel.find({});
         const testeExibicaoErros = yield OperationModelComErros.find({});
+        const exibicaoPorLojas = app.locals.sharedData;
         const exibicao = {
             Mensagem: 'Listagem das operações com sucesso.',
             Conteúdo: testeExibicao,
@@ -37,6 +39,7 @@ app.get('/database', (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const exibicaoFinal = {
             Operações: exibicao,
             Operações_com_erros: exibicaoComErros,
+            Operações_por_lojas: exibicaoPorLojas,
         };
         res.status(200).json(exibicaoFinal);
     }
@@ -51,7 +54,9 @@ app.post('/upload', upload.single('txtFile'), (req, res) => __awaiter(void 0, vo
     const arquivoCNAB = req.file.buffer.toString('utf-8');
     //TRATAMENTO DO ARQUIVO
     let arqTratadoEmArrays = (0, CNABController_1.tratarArquivoCNAB)(arquivoCNAB);
-    console.log("cheguei aqui... (corretos)");
+    console.log("TESTE LOGO ABAIXO: ##########");
+    const listaPorLojas = (0, CNABController_2.listarOperacoesPorLoja)(arqTratadoEmArrays.arrayResultado);
+    app.locals.sharedData = listaPorLojas;
     try {
         for (const entidade of arqTratadoEmArrays.arrayResultado) {
             const [Tipo, Data, Valor, CPF, Cartão, Dono_Loja, Nome_Loja] = entidade;
