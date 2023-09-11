@@ -4,9 +4,11 @@ export function tratarArquivoCNAB(fileTxt: any) {
     let linhas = fileTxt.split("\n");
 
     const arrayResultado: (string | number)[][] = [];
+    const arrayResultadoComErros: (string | number)[][] = [];
 
     linhas.forEach((linha: any) => {
         const arrayAux: (string | number)[] = [];
+        const arrayAuxComErros: (string | number)[] = [];
 
         try {
             let tipo = obterTipoTransacao(linha.substring(0, 1));
@@ -21,6 +23,18 @@ export function tratarArquivoCNAB(fileTxt: any) {
             arrayResultado.push(arrayAux);
 
         } catch (error: any) {
+            let tipo = linha.substring(0, 1);
+            let data = linha.substring(1, 9);
+            let valor = formatarValor(linha.substring(9, 19)).toFixed(2); 
+            let cpf = linha.substring(19, 30);
+            let cartao = linha.substring(30, 42);
+            let donoLoja = linha.substring(42, 56);
+            let nomeLoja = linha.substring(56, 74);
+            let motivoErro = error.message;
+
+            arrayAuxComErros.push(tipo, data, valor, cpf, cartao, donoLoja, nomeLoja, motivoErro);
+            arrayResultadoComErros.push(arrayAuxComErros);
+
             if (error instanceof Error) {
                 console.error(`Ocorreu um erro: ${error.message}`);
             } else {
@@ -29,7 +43,7 @@ export function tratarArquivoCNAB(fileTxt: any) {
         }
     });
 
-    return arrayResultado;
+    return { arrayResultado, arrayResultadoComErros };
 };
 
 function obterTipoTransacao(tipo: string) {

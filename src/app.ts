@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
 const OperationModel = require("./models/model");
+const OperationModelComErros = require("./models/modelWithErrors");
 
 const app = express();
 app.use(express.json());
@@ -24,11 +25,13 @@ app.post('/upload', upload.single('txtFile'), async (req: any, res:any) => {
   //TRATAMENTO DO ARQUIVO
 
   let arqTratadoEmArrays = tratarArquivoCNAB(arquivoCNAB);
+
+  console.log("cheguei aqui... (corretos)");
   
-  //res.send(resultado); //VISUALIZAÇÃO TEMPORÁRIA
+  //res.send(arqTratadoEmArrays.arrayResultadoComErros); //VISUALIZAÇÃO TEMPORÁRIA
 
   try {
-    for (const entidade of arqTratadoEmArrays) {
+    for (const entidade of arqTratadoEmArrays.arrayResultado) {
       const [Tipo, Data, Valor, CPF, Cartão, Dono_Loja, Nome_Loja] = entidade;
       const documento = new OperationModel({
         Tipo,
@@ -43,25 +46,80 @@ app.post('/upload', upload.single('txtFile'), async (req: any, res:any) => {
       await documento.save();
     }
 
-    console.log('Dados inseridos com sucesso ao banco de dados.');
+    //console.log('Dados corretos inseridos com sucesso ao banco de dados.');
+    //res.status(200).send('Dados corretos inseridos com sucesso.');
+
+  } catch (error) {
+    console.error('Erro ao inserir dados corretos:', error);
+    res.status(500).send('Erro ao inserir dados corretos.');
+  }
+
+  try {
+    console.log("cheguei aqui... (erros)");
+    for (const entidadeComErros of arqTratadoEmArrays.arrayResultadoComErros) {
+      const [Tipo, Data, Valor, CPF, Cartão, Dono_Loja, Nome_Loja, Motivo_Erro] = entidadeComErros;
+      const documentoComErros = new OperationModelComErros({
+        Tipo,
+        Data,
+        Valor,
+        CPF,
+        Cartão,
+        Dono_Loja,
+        Nome_Loja,
+        Motivo_Erro,
+      });
+
+      await documentoComErros.save();
+    }
+
+    //console.log('Dados com erros inseridos com sucesso ao banco de dados.');
     res.status(200).send('Dados inseridos com sucesso.');
   } catch (error) {
-    console.error('Erro ao inserir dados:', error);
-    res.status(500).send('Erro ao inserir dados.');
+    console.error('Erro ao inserir dados com erros:', error);
+    res.status(500).send('Erro ao inserir dados com erros.');
   }
 });
 
+// app.post('/upload', upload.single('txtFile'), async (req: any, res:any) => {
+//   const arquivoCNAB = req.file.buffer.toString('utf-8');
 
+//   let arqTratadoEmArrays = tratarArquivoCNAB(arquivoCNAB);
 
-app.post("/teste", (req: any, res:any) => { //POST PARA TESTAR NO POSTMAN
-  try {
-    const user = OperationModel.create(req.body);
+//   console.log("cheguei aqui... (erros)");
 
-    res.status(201).json(user); 
-  } catch (error) {
-    res.status(500);
-  }
-});
+//   try {
+//     for (const entidadeComErros of arqTratadoEmArrays.arrayResultadoComErros) {
+//       const [Tipo, Data, Valor, CPF, Cartão, Dono_Loja, Nome_Loja] = entidadeComErros;
+//       const documentoComErros = new OperationModelComErros({
+//         Tipo,
+//         Data,
+//         Valor,
+//         CPF,
+//         Cartão,
+//         Dono_Loja,
+//         Nome_Loja,
+//       });
+
+//       await documentoComErros.save();
+//     }
+
+//     //console.log('Dados com erros inseridos com sucesso ao banco de dados.');
+//     res.status(200).send('Dados com erros inseridos com sucesso.');
+//   } catch (error) {
+//     console.error('Erro ao inserir dados com erros:', error);
+//     res.status(500).send('Erro ao inserir dados com erros.');
+//   }
+// });
+
+// app.post("/teste", (req: any, res:any) => { //POST PARA TESTAR NO POSTMAN
+//   try {
+//     const user = OperationModel.create(req.body);
+
+//     res.status(201).json(user); 
+//   } catch (error) {
+//     res.status(500);
+//   }
+// });
 
 
 const port = 3000;

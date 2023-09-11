@@ -5,8 +5,10 @@ const date_fns_1 = require("date-fns");
 function tratarArquivoCNAB(fileTxt) {
     let linhas = fileTxt.split("\n");
     const arrayResultado = [];
+    const arrayResultadoComErros = [];
     linhas.forEach((linha) => {
         const arrayAux = [];
+        const arrayAuxComErros = [];
         try {
             let tipo = obterTipoTransacao(linha.substring(0, 1));
             let data = formatarData(linha.substring(1, 9));
@@ -19,6 +21,16 @@ function tratarArquivoCNAB(fileTxt) {
             arrayResultado.push(arrayAux);
         }
         catch (error) {
+            let tipo = linha.substring(0, 1);
+            let data = linha.substring(1, 9);
+            let valor = formatarValor(linha.substring(9, 19)).toFixed(2);
+            let cpf = linha.substring(19, 30);
+            let cartao = linha.substring(30, 42);
+            let donoLoja = linha.substring(42, 56);
+            let nomeLoja = linha.substring(56, 74);
+            let motivoErro = error.message;
+            arrayAuxComErros.push(tipo, data, valor, cpf, cartao, donoLoja, nomeLoja, motivoErro);
+            arrayResultadoComErros.push(arrayAuxComErros);
             if (error instanceof Error) {
                 console.error(`Ocorreu um erro: ${error.message}`);
             }
@@ -27,7 +39,7 @@ function tratarArquivoCNAB(fileTxt) {
             }
         }
     });
-    return arrayResultado;
+    return { arrayResultado, arrayResultadoComErros };
 }
 exports.tratarArquivoCNAB = tratarArquivoCNAB;
 ;
