@@ -1,5 +1,11 @@
+/**
+ * Importação do módulo Mongoose - biblioteca usada para interagir com bancos de dados MongoDB a partir de aplicativos Node.js.
+ */
 const mongooseToDatabaseComErros = require("mongoose");
 
+/**
+ * Entidades das operações realizadas com dados inválidos. 
+ */
 const operationSchemaComErros = new mongooseToDatabaseComErros.Schema({
     Tipo: {
       type: String,

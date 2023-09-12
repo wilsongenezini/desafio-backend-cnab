@@ -1,9 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.listarOperacoesPorLoja = exports.tratarArquivoCNAB = void 0;
+/**
+ * Importação do Módulo "date-fns" - usadas para formatar datas e analisar strings de data em objetos de data.
+ */
 const date_fns_1 = require("date-fns");
-function tratarArquivoCNAB(fileTxt) {
-    let linhas = fileTxt.split("\n");
+/**
+ * Recebe o arquivo de texto e separa os dados tratados em índices de um array de operações.
+ * @param arquivoTxt - Arquivo de texto upado para ser tratado.
+ * @returns - Dois arrays com os dados tratados: operações de sucesso e operações com algum valor inválido.
+ */
+function tratarArquivoCNAB(arquivoTxt) {
+    let linhas = arquivoTxt.split("\n");
     const arrayResultado = [];
     const arrayResultadoComErros = [];
     linhas.forEach((linha) => {
@@ -43,6 +51,11 @@ function tratarArquivoCNAB(fileTxt) {
 }
 exports.tratarArquivoCNAB = tratarArquivoCNAB;
 ;
+/**
+ * Separa as operações de um banco de dados por loja, com seu saldo total.
+ * @param listagem - Operações de sucesso armazenadas no banco de dados.
+ * @returns - Um novo JSON formatado, onde as operações estão filtradas por loja.
+ */
 function listarOperacoesPorLoja(listagem) {
     const resultado = {};
     let operacoesDestaLoja = {};
@@ -73,6 +86,11 @@ function listarOperacoesPorLoja(listagem) {
     return exibicaoPorLojas;
 }
 exports.listarOperacoesPorLoja = listarOperacoesPorLoja;
+/**
+ * Verifica qual o tipo da transação realizada na operação.
+ * @param tipo - Dígito do arquivo de texto que define a operação.
+ * @returns - O tipo da operação.
+ */
 function obterTipoTransacao(tipo) {
     switch (tipo) {
         case "1":
@@ -87,6 +105,11 @@ function obterTipoTransacao(tipo) {
             throw new Error("Tipo de transação inválido.");
     }
 }
+/**
+ * Verifica se uma data é válida e depois a formata.
+ * @param data - Parte do arquivo de texto que define a data da operação.
+ * @returns - A data em formato "dd/MM/yyyy".
+ */
 function formatarData(data) {
     const dataAtual = (0, date_fns_1.parse)(data, "yyyyMMdd", new Date());
     if (!verificarDataValida(dataAtual)) {
@@ -95,13 +118,28 @@ function formatarData(data) {
     const dataNova = (0, date_fns_1.format)(dataAtual, "dd/MM/yyyy");
     return dataNova;
 }
+/**
+ * Verifica se uma data é válida.
+ * @param data - Parte do arquivo de texto que define a data da operação.
+ * @returns - Retorna true para uma data válida e false para uma data inválida.
+ */
 function verificarDataValida(data) {
     return data instanceof Date && !isNaN(data.getTime());
 }
+/**
+ * Converte um conteúdo de números em string para um número decimal.
+ * @param valor - Conteúdo em string para ser formatado.
+ * @returns - Conteúdo formato em número decimal.
+ */
 function formatarValor(valor) {
     const valorFormatado = parseFloat(valor) / 100;
     return valorFormatado;
 }
+/**
+ * Verifica se um CPF é válido e depois o formata.
+ * @param cpf - Parte do arquivo de texto que define o CPF da operação.
+ * @returns - O CPF em formato "000.000.000-00".
+ */
 function formatarCpf(cpf) {
     if (!isValidCPF(cpf)) {
         throw new Error("CPF inválido.");
@@ -109,6 +147,11 @@ function formatarCpf(cpf) {
     cpf = cpf.replace(/\D/g, '');
     return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
 }
+/**
+ * Verifica se um CPF é válido.
+ * @param cpf - Parte do arquivo de texto que define o CPF da operação.
+ * @returns - Retorna true para um CPF válido e false para um CPF inválido.
+ */
 function isValidCPF(cpf) {
     if (typeof cpf !== "string")
         return false;

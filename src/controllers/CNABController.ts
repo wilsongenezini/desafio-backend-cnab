@@ -1,12 +1,15 @@
+/**
+ * Importação do Módulo "date-fns" - usadas para formatar datas e analisar strings de data em objetos de data.
+ */
 import { format, parse } from "date-fns";
 
 /**
- * 
- * @param fileTxt 
- * @returns 
+ * Recebe o arquivo de texto e separa os dados tratados em índices de um array de operações.
+ * @param arquivoTxt - Arquivo de texto upado para ser tratado.
+ * @returns - Dois arrays com os dados tratados: operações de sucesso e operações com algum valor inválido.
  */
-export function tratarArquivoCNAB(fileTxt: string) {
-    let linhas = fileTxt.split("\n");
+export function tratarArquivoCNAB(arquivoTxt: string) {
+    let linhas = arquivoTxt.split("\n");
 
     const arrayResultado: (string | number)[][] = [];
     const arrayResultadoComErros: (string | number)[][] = [];
@@ -51,6 +54,11 @@ export function tratarArquivoCNAB(fileTxt: string) {
     return { arrayResultado, arrayResultadoComErros };
 };
 
+/**
+ * Separa as operações de um banco de dados por loja, com seu saldo total.
+ * @param listagem - Operações de sucesso armazenadas no banco de dados.
+ * @returns - Um novo JSON formatado, onde as operações estão filtradas por loja.
+ */
 export function listarOperacoesPorLoja(listagem: {
     Tipo: string;
     Data: string;
@@ -98,6 +106,11 @@ export function listarOperacoesPorLoja(listagem: {
     return exibicaoPorLojas;
 }
 
+/**
+ * Verifica qual o tipo da transação realizada na operação.
+ * @param tipo - Dígito do arquivo de texto que define a operação.
+ * @returns - O tipo da operação.
+ */
 function obterTipoTransacao(tipo: string) {
     switch (tipo) {
         case "1":
@@ -113,6 +126,11 @@ function obterTipoTransacao(tipo: string) {
     }
 }
 
+/**
+ * Verifica se uma data é válida e depois a formata.
+ * @param data - Parte do arquivo de texto que define a data da operação.
+ * @returns - A data em formato "dd/MM/yyyy".
+ */
 function formatarData(data: string) {
     const dataAtual = parse(data, "yyyyMMdd", new Date());
   
@@ -124,16 +142,21 @@ function formatarData(data: string) {
 
     return dataNova;
 }
-  
+
+/**
+ * Verifica se uma data é válida.
+ * @param data - Parte do arquivo de texto que define a data da operação.
+ * @returns - Retorna true para uma data válida e false para uma data inválida.
+ */
 function verificarDataValida(data: Date) {
     
     return data instanceof Date && !isNaN(data.getTime());
 }
 
 /**
- * Converte um conteúdo de números em string para um número decimal
- * @param valor 
- * @returns 
+ * Converte um conteúdo de números em string para um número decimal.
+ * @param valor - Conteúdo em string para ser formatado.
+ * @returns - Conteúdo formato em número decimal.
  */
 function formatarValor(valor: string) {
     const valorFormatado = parseFloat(valor) / 100;
@@ -141,6 +164,11 @@ function formatarValor(valor: string) {
     return valorFormatado;
 }
 
+/**
+ * Verifica se um CPF é válido e depois o formata.
+ * @param cpf - Parte do arquivo de texto que define o CPF da operação.
+ * @returns - O CPF em formato "000.000.000-00".
+ */
 function formatarCpf(cpf: string) {
     if (!isValidCPF(cpf)) {
         throw new Error("CPF inválido.");
@@ -151,6 +179,12 @@ function formatarCpf(cpf: string) {
     return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
 }
 
+
+/**
+ * Verifica se um CPF é válido.
+ * @param cpf - Parte do arquivo de texto que define o CPF da operação.
+ * @returns - Retorna true para um CPF válido e false para um CPF inválido.
+ */
 function isValidCPF(cpf: string): boolean {
     if (typeof cpf !== "string") return false;
     
