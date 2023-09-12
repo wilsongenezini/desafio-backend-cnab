@@ -1,5 +1,10 @@
-import { format, parse } from 'date-fns';
+import { format, parse } from "date-fns";
 
+/**
+ * 
+ * @param fileTxt 
+ * @returns 
+ */
 export function tratarArquivoCNAB(fileTxt: string) {
     let linhas = fileTxt.split("\n");
 
@@ -36,9 +41,9 @@ export function tratarArquivoCNAB(fileTxt: string) {
             arrayResultadoComErros.push(arrayAuxComErros);
 
             if (error instanceof Error) {
-                console.error(`Ocorreu um erro: ${error.message}`);
+                console.error(`Ocorreu um erro: ${error.message} Salvo no banco de dados de operações com erros.`);
             } else {
-                console.error('Ocorreu um erro desconhecido.');
+                console.error("Ocorreu um erro desconhecido.");
             }
         }
     });
@@ -46,80 +51,50 @@ export function tratarArquivoCNAB(fileTxt: string) {
     return { arrayResultado, arrayResultadoComErros };
 };
 
-// class Operacoes {
-//     constructor(
-//         public Tipo: string,
-//         public Data: string,
-//         public Valor: number,
-//         public CPF: string,
-//         public Cartao: string,
-//         public Dono_Loja: string,
-//         public Nome_Loja: string
-//     ) {}
-// };
-
-// function listarOperacoesPorLoja(operacoes: Operacoes[]) {
-//     let arrayAux: (string | number)[][] = operacoes.map(operacao => [
-//         operacao.Tipo,
-//         operacao.Data,
-//         operacao.Valor,
-//         operacao.CPF,
-//         operacao.Cartao,
-//         operacao.Dono_Loja,
-//         operacao.Nome_Loja,
-//     ]);
-//     let arrayAuxCopia: (string | number)[][] = arrayAux;
-//     const arrayResultado: (string | number)[][] = [];
-
-//     for (const operacao of operacoes) {
-        
-//         const arrayFiltradoPorLoja: (string | number)[] = [];
-//         arrayAux = arrayAuxCopia;
-
-//         for (const operacaoAux of arrayAux) {
-//             if (operacaoAux === operacao || operacaoAux === operacao.valueOf()) {
-//                 arrayFiltradoPorLoja.push()
-//             }
-//         }
-//     }
-// };
-
-export function listarOperacoesPorLoja(listagem: (string | number)[][]) {
+export function listarOperacoesPorLoja(listagem: {
+    Tipo: string;
+    Data: string;
+    Valor: number;
+    CPF: string;
+    Cartão: string;
+    Dono_Loja: string;
+    Nome_Loja: string;
+    }[]) {
     const resultado: Record<string, number> = {};
     let operacoesDestaLoja: Record<string, Record<string, string | number>[]> = {};
-
-    for (const i of listagem) {
-        const nomeLoja = i[6]; 
-        const valor = Number(i[2]); 
-
-        if (!resultado[nomeLoja]) {
-            resultado[nomeLoja] = 0;
-        }
-
-        resultado[nomeLoja] += valor;
-
-        if (!operacoesDestaLoja[nomeLoja]) {
-            operacoesDestaLoja[nomeLoja] = [];
-        }
-
-        const operacao = {
-            Tipo: i[0],
-            Data: i[1],
-            CPF: i[3],
-            Cartao: i[4],
-            Dono_Loja: i[5]
-        };
-
-        operacoesDestaLoja[nomeLoja].push(operacao);
+  
+    for (const item of listagem) {
+      const nomeLoja = item.Nome_Loja;
+      const valor = item.Valor;
+  
+      if (!resultado[nomeLoja]) {
+        resultado[nomeLoja] = 0;
+      }
+  
+      resultado[nomeLoja] += valor;
+  
+      if (!operacoesDestaLoja[nomeLoja]) {
+        operacoesDestaLoja[nomeLoja] = [];
+      }
+  
+      const operacao = {
+        Tipo: item.Tipo,
+        Data: item.Data,
+        CPF: item.CPF,
+        Cartão: item.Cartão,
+        Dono_Loja: item.Dono_Loja
+      };
+  
+      operacoesDestaLoja[nomeLoja].push(operacao);
     }
-
+  
     const exibicaoPorLojas: Record<string, any> = {};
-
+  
     for (const loja in resultado) {
-        exibicaoPorLojas[loja] = resultado[loja];
-        exibicaoPorLojas[`${loja}_Operacoes`] = operacoesDestaLoja[loja];
+      exibicaoPorLojas[loja] = resultado[loja];
+      exibicaoPorLojas[`${loja}_Operações`] = operacoesDestaLoja[loja];
     }
-
+  
     return exibicaoPorLojas;
 }
 
@@ -146,13 +121,20 @@ function formatarData(data: string) {
     }
   
     const dataNova = format(dataAtual, "dd/MM/yyyy");
+
     return dataNova;
 }
   
 function verificarDataValida(data: Date) {
+    
     return data instanceof Date && !isNaN(data.getTime());
 }
 
+/**
+ * Converte um conteúdo de números em string para um número decimal
+ * @param valor 
+ * @returns 
+ */
 function formatarValor(valor: string) {
     const valorFormatado = parseFloat(valor) / 100;
 
@@ -165,11 +147,12 @@ function formatarCpf(cpf: string) {
     }
 
     cpf = cpf.replace(/\D/g, '');
-    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+
+    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
 }
 
 function isValidCPF(cpf: string): boolean {
-    if (typeof cpf !== 'string') return false;
+    if (typeof cpf !== "string") return false;
     
     cpf = cpf.replace(/[^\d]+/g, '');
   
@@ -181,4 +164,4 @@ function isValidCPF(cpf: string): boolean {
       .reduce((soma, el, index) => (soma + el * (count-index)), 0) * 10) % 11 % 10;
   
     return rest(10) === cpfArray[9] && rest(11) === cpfArray[10];
-  }
+}

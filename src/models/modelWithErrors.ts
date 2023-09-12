@@ -33,8 +33,8 @@ const operationSchemaComErros = new mongooseToDatabaseComErros.Schema({
         type: String,
         required: true,
       },
-  });
+});
   
-  const OperationModelComErros = mongooseToDatabaseComErros.model("OperationWithErrors", operationSchemaComErros);
-  
-  module.exports = OperationModelComErros;
+const OperationModelComErros = mongooseToDatabaseComErros.model("OperationWithErrors", operationSchemaComErros);
+
+module.exports = OperationModelComErros;

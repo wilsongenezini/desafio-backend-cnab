@@ -1,6 +1,5 @@
-const express = require('express');
-const multer = require('multer');
-const fs = require('fs');
+const express = require("express");
+const multer = require("multer");
 const OperationModel = require("./models/model");
 const OperationModelComErros = require("./models/modelWithErrors");
 
@@ -13,28 +12,28 @@ const upload = multer({ storage });
 import { tratarArquivoCNAB } from "./controllers/CNABController"; //IMPORTAR FUNÇÃO DA CONTROLLER
 import { listarOperacoesPorLoja } from "./controllers/CNABController";
 
-app.get('/home', (req: any, res: any) => {
+app.get("/home", (req: any, res: any) => {
   res.send('<form action="/upload" method="post" enctype="multipart/form-data"><input type="file" name="txtFile"><input type="submit" value="Enviar"></form>');
 });
 
-app.get('/database', async (req: any, res:any) => { 
+app.get("/database", async (req: any, res:any) => { 
   try {
-    const testeExibicao = await OperationModel.find({});
-    const testeExibicaoErros = await OperationModelComErros.find({});
-    const exibicaoPorLojas = app.locals.sharedData;
+    const exibicao = await OperationModel.find({}, { _id: 0, __v: 0 });
+    const exibicaoErros = await OperationModelComErros.find({}, { _id: 0, __v: 0 });
+    const exibicaoPorLojas = await listarOperacoesPorLoja(exibicao);
 
-    const exibicao = {
-      Mensagem: 'Listagem das operações com sucesso.',
-      Conteúdo: testeExibicao,
+    const exibicaoOperacoes = {
+      Mensagem: "Listagem das operações com sucesso.",
+      Conteúdo: exibicao,
     };
 
     const exibicaoComErros = {
-      Mensagem: 'Listagem das operações com erro.',
-      Conteúdo: testeExibicaoErros,
+      Mensagem: "Listagem das operações com erro.",
+      Conteúdo: exibicaoErros,
     };
 
     const exibicaoFinal = {
-      Operações: exibicao,
+      Operações: exibicaoOperacoes,
       Operações_com_erros: exibicaoComErros,
       Operações_por_lojas: exibicaoPorLojas,
     }
@@ -42,25 +41,19 @@ app.get('/database', async (req: any, res:any) => {
     res.status(200).json(exibicaoFinal);
 
   } catch (error) {
-    console.error('Erro ao exibir dados.', error);
-    res.status(500).send('Erro ao exibir dados.');
+    console.error("Erro ao exibir dados: ", error);
+    res.status(500).send("Erro ao exibir dados.");
   }
 });  
 
-app.post('/upload', upload.single('txtFile'), async (req: any, res:any) => {
-  if (!req.file)
-    return res.status(400).send('Nenhum arquivo foi enviado.');
+app.post("/upload", upload.single("txtFile"), async (req: any, res:any) => {
+  if (!req.file) {
+    res.status(400).send("Nenhum arquivo foi enviado.");
+  }
 
-  const arquivoCNAB = req.file.buffer.toString('utf-8');
+  const arquivoCNAB = req.file.buffer.toString("utf-8");
 
-  //TRATAMENTO DO ARQUIVO
-
-  let arqTratadoEmArrays = tratarArquivoCNAB(arquivoCNAB);
-
-  console.log("TESTE LOGO ABAIXO: ##########");
-
-  const listaPorLojas = listarOperacoesPorLoja(arqTratadoEmArrays.arrayResultado);
-  app.locals.sharedData = listaPorLojas;
+  const arqTratadoEmArrays = tratarArquivoCNAB(arquivoCNAB);
   
   try {
     for (const entidade of arqTratadoEmArrays.arrayResultado) {
@@ -81,12 +74,11 @@ app.post('/upload', upload.single('txtFile'), async (req: any, res:any) => {
     res.status(201);
 
   } catch (error) {
-    console.error('Erro ao inserir dados corretos:', error);
-    res.status(500).send('Erro ao inserir dados corretos.');
+    console.error("Erro ao inserir dados corretos: ", error);
+    res.status(500).send("Erro ao inserir dados corretos.");
   }
 
   try {
-    console.log("cheguei aqui... (erros)");
     for (const entidadeComErros of arqTratadoEmArrays.arrayResultadoComErros) {
       const [Tipo, Data, Valor, CPF, Cartão, Dono_Loja, Nome_Loja, Motivo_Erro] = entidadeComErros;
       const documentoComErros = new OperationModelComErros({
@@ -106,14 +98,17 @@ app.post('/upload', upload.single('txtFile'), async (req: any, res:any) => {
     res.status(201);
 
   } catch (error) {
-    console.error('Erro ao inserir dados com erros:', error);
-    res.status(500).send('Erro ao inserir dados com erros.');
+    console.error("Erro ao inserir dados com erros: ", error);
+    res.status(500).send("Erro ao inserir dados com erros.");
   }
 
-  res.redirect('/database');
+  res.redirect("/database");
 });
 
-// app.post("/teste", (req: any, res:any) => { //POST PARA TESTAR NO POSTMAN
+//----------------------------------------------------------//
+// MÉTODO POST PARA TESTAR NO POSTMAN
+
+// app.post("/teste", (req: any, res:any) => { 
 //   try {
 //     const user = OperationModel.create(req.body);
 
@@ -122,6 +117,7 @@ app.post('/upload', upload.single('txtFile'), async (req: any, res:any) => {
 //     res.status(500);
 //   }
 // });
+//----------------------------------------------------------//
 
 const port = 3000;
-app.listen(port, () => console.log(`Rodando na porta ${port}`));
+app.listen(port, () => console.log(`Projeto rodando em: http://localhost:${port}/home`));

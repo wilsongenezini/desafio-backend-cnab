@@ -18,7 +18,7 @@ const connectToDatabase = () => __awaiter(void 0, void 0, void 0, function* () {
         console.log("Conexão ao banco de dados realizada com sucesso!");
     }
     catch (error) {
-        console.error("Ocorreu um erro ao se conectar com o banco de dados:", error);
+        console.error("Ocorreu um erro ao se conectar com o banco de dados: ", error);
     }
 });
 module.exports = connectToDatabase;

@@ -32,10 +32,10 @@ function tratarArquivoCNAB(fileTxt) {
             arrayAuxComErros.push(tipo, data, valor, cpf, cartao, donoLoja, nomeLoja, motivoErro);
             arrayResultadoComErros.push(arrayAuxComErros);
             if (error instanceof Error) {
-                console.error(`Ocorreu um erro: ${error.message}`);
+                console.error(`Ocorreu um erro: ${error.message} Salvo no banco de dados de operações com erros.`);
             }
             else {
-                console.error('Ocorreu um erro desconhecido.');
+                console.error("Ocorreu um erro desconhecido.");
             }
         }
     });
@@ -43,45 +43,12 @@ function tratarArquivoCNAB(fileTxt) {
 }
 exports.tratarArquivoCNAB = tratarArquivoCNAB;
 ;
-// class Operacoes {
-//     constructor(
-//         public Tipo: string,
-//         public Data: string,
-//         public Valor: number,
-//         public CPF: string,
-//         public Cartao: string,
-//         public Dono_Loja: string,
-//         public Nome_Loja: string
-//     ) {}
-// };
-// function listarOperacoesPorLoja(operacoes: Operacoes[]) {
-//     let arrayAux: (string | number)[][] = operacoes.map(operacao => [
-//         operacao.Tipo,
-//         operacao.Data,
-//         operacao.Valor,
-//         operacao.CPF,
-//         operacao.Cartao,
-//         operacao.Dono_Loja,
-//         operacao.Nome_Loja,
-//     ]);
-//     let arrayAuxCopia: (string | number)[][] = arrayAux;
-//     const arrayResultado: (string | number)[][] = [];
-//     for (const operacao of operacoes) {
-//         const arrayFiltradoPorLoja: (string | number)[] = [];
-//         arrayAux = arrayAuxCopia;
-//         for (const operacaoAux of arrayAux) {
-//             if (operacaoAux === operacao || operacaoAux === operacao.valueOf()) {
-//                 arrayFiltradoPorLoja.push()
-//             }
-//         }
-//     }
-// };
 function listarOperacoesPorLoja(listagem) {
     const resultado = {};
     let operacoesDestaLoja = {};
-    for (const i of listagem) {
-        const nomeLoja = i[6];
-        const valor = Number(i[2]);
+    for (const item of listagem) {
+        const nomeLoja = item.Nome_Loja;
+        const valor = item.Valor;
         if (!resultado[nomeLoja]) {
             resultado[nomeLoja] = 0;
         }
@@ -90,18 +57,18 @@ function listarOperacoesPorLoja(listagem) {
             operacoesDestaLoja[nomeLoja] = [];
         }
         const operacao = {
-            Tipo: i[0],
-            Data: i[1],
-            CPF: i[3],
-            Cartao: i[4],
-            Dono_Loja: i[5]
+            Tipo: item.Tipo,
+            Data: item.Data,
+            CPF: item.CPF,
+            Cartão: item.Cartão,
+            Dono_Loja: item.Dono_Loja
         };
         operacoesDestaLoja[nomeLoja].push(operacao);
     }
     const exibicaoPorLojas = {};
     for (const loja in resultado) {
         exibicaoPorLojas[loja] = resultado[loja];
-        exibicaoPorLojas[`${loja}_Operacoes`] = operacoesDestaLoja[loja];
+        exibicaoPorLojas[`${loja}_Operações`] = operacoesDestaLoja[loja];
     }
     return exibicaoPorLojas;
 }
@@ -140,10 +107,10 @@ function formatarCpf(cpf) {
         throw new Error("CPF inválido.");
     }
     cpf = cpf.replace(/\D/g, '');
-    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
 }
 function isValidCPF(cpf) {
-    if (typeof cpf !== 'string')
+    if (typeof cpf !== "string")
         return false;
     cpf = cpf.replace(/[^\d]+/g, '');
     if (cpf.length !== 11 || !!cpf.match(/(\d)\1{10}/))
